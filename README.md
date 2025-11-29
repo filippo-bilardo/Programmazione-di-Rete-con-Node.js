@@ -1,4 +1,4 @@
-# Programmazione di Rete con Node.js - Indice Completo del Libro
+# Programmazione di Rete con Node.js
 
 ## **📚 PREFAZIONE**
 - A chi è rivolto questo libro
