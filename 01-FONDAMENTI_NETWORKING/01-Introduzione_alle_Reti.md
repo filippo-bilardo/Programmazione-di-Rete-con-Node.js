@@ -132,11 +132,11 @@ Il modello **TCP/IP** è il modello pratico utilizzato su Internet:
 Il modello **Client-Server** è il paradigma fondamentale delle reti moderne:
 
 ```
-┌─────────────┐          Request          ┌─────────────┐
+┌─────────────┐          Request         ┌─────────────┐
 │             │ ───────────────────────> │             │
-│   CLIENT    │                           │   SERVER    │
+│   CLIENT    │                          │   SERVER    │
 │             │ <─────────────────────── │             │
-└─────────────┘          Response         └─────────────┘
+└─────────────┘          Response        └─────────────┘
 ```
 
 ### Caratteristiche
@@ -187,12 +187,12 @@ Nel modello **P2P**, ogni nodo è contemporaneamente client e server:
 ```
     ┌─────────┐
     │  Peer A │ ←─────────────┐
-    └────┬────┘                │
-         │                     │
-         ↓                     │
-    ┌─────────┐           ┌────┴────┐
-    │  Peer B │ ←────────>│  Peer C │
-    └─────────┘           └─────────┘
+    └────┬────┘               │
+         │                    │
+         ↓                    │
+    ┌─────────┐          ┌────┴────┐
+    │  Peer B │ ←───────>│  Peer C │
+    └─────────┘          └─────────┘
 ```
 
 ### Caratteristiche
@@ -253,14 +253,14 @@ Alcuni sistemi usano un approccio **ibrido**:
 Il pattern **Request-Response** è il modello di comunicazione più comune:
 
 ```
-CLIENT                                SERVER
-  │                                     │
+CLIENT                               SERVER
+  │                                    │
   │──── (1) Request ───────────────>   │
-  │                                     │
+  │                                    │
   │                              (2) Process
-  │                                     │
+  │                                    │
   │  <───── (3) Response ──────────────│
-  │                                     │
+  │                                    │
 ```
 
 ### Caratteristiche
@@ -328,13 +328,13 @@ Content-Length: 58
 Client fa polling periodico per aggiornamenti:
 
 ```
-CLIENT                    SERVER
-  │──── Request ──────>   │
-  │                       │ (attende evento)
-  │                       │
+CLIENT                  SERVER
+  │──── Request ──────>  │
+  │                      │ (attende evento)
+  │                      │
   │  <─── Response ──────│ (dopo evento)
-  │                       │
-  │──── Request ──────>   │ (nuovo ciclo)
+  │                      │
+  │──── Request ──────>  │ (nuovo ciclo)
 ```
 
 #### 2. Streaming Response
@@ -342,9 +342,9 @@ CLIENT                    SERVER
 Server invia risposta in chunk:
 
 ```
-CLIENT                    SERVER
-  │──── Request ──────>   │
-  │                       │
+CLIENT                  SERVER
+  │──── Request ──────>  │
+  │                      │
   │  <─── Chunk 1 ───────│
   │  <─── Chunk 2 ───────│
   │  <─── Chunk 3 ───────│

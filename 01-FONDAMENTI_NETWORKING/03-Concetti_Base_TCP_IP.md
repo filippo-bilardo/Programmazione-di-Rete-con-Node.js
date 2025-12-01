@@ -319,7 +319,116 @@ Effective Window = min(RWND, CWND)
                      └─ Receive Window (receiver)
 ```
 
-### In Node.js
+### In Node.js - Flow Control e Backpressure in TCP
+
+Questo codice dimostra come TCP gestisce automaticamente il **controllo di flusso** (flow control) e il **backpressure** in Node.js.
+
+#### 1. Flow Control Automatico
+```javascript
+socket.on('data', (chunk) => {
+    processData(chunk); // operazione bloccante
+});
+```
+
+**Cosa succede dietro le quinte:**
+- TCP usa la **receive window** per comunicare al sender quanti dati può inviare
+- Se `processData()` è lenta, il buffer del socket si riempie
+- TCP riduce automaticamente la receive window, rallentando il mittente
+- Il sender non invierà più dati di quanti il receiver possa gestire
+
+**Gotcha importante:** Se `processData()` è veramente lento, il buffer potrebbe riempirsi completamente, causando perdita di dati o timeout.
+
+#### 2. Backpressure Handling
+```javascript
+socket.write(bigData, () => {
+    console.log('Data sent (flow control handled by TCP)');
+});
+```
+
+**Come funziona:**
+- `socket.write()` ritorna `true` se i dati sono stati bufferizzati con successo
+- Ritorna `false` se il buffer interno è pieno (backpressure!)
+- Il callback viene eseguito quando i dati sono stati **effettivamente inviati** sulla rete
+
+#### Esempio Migliorato con Gestione Esplicita del Backpressure
+
+````javascript
+const net = require('net');
+
+// SERVER: Gestione ricezione con flow control
+const server = net.createServer((socket) => {
+    console.log('Client connesso');
+    
+    socket.on('data', (chunk) => {
+        console.log(`Ricevuti ${chunk.length} bytes`);
+        
+        // Simulazione elaborazione lenta
+        processDataSlowly(chunk).then(() => {
+            console.log('Elaborazione completata');
+            // TCP ha già gestito il flow control automaticamente
+        });
+    });
+});
+
+// CLIENT: Gestione invio con backpressure esplicito
+const client = net.createConnection({ port: 3000 }, () => {
+    console.log('Connesso al server');
+    
+    const bigData = Buffer.alloc(1024 * 1024); // 1MB di dati
+    
+    // Controlla il valore di ritorno per gestire il backpressure
+    const canContinue = client.write(bigData, (err) => {
+        if (err) {
+            console.error('Errore invio:', err);
+        } else {
+            console.log('Dati inviati (TCP ha gestito il flow control)');
+        }
+    });
+    
+    if (!canContinue) {
+        console.log('Buffer pieno! Aspetto il drain event...');
+        
+        // Aspetta che il buffer si svuoti prima di inviare altri dati
+        client.once('drain', () => {
+            console.log('Buffer svuotato, posso inviare altri dati');
+        });
+    }
+});
+
+// Funzione helper
+async function processDataSlowly(data) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            // Elaborazione simulata
+            resolve();
+        }, 1000);
+    });
+}
+
+server.listen(3000, () => {
+    console.log('Server in ascolto sulla porta 3000');
+});
+````
+
+#### Best Practices
+
+**✅ Fai:**
+- Monitora il valore di ritorno di `socket.write()`
+- Ascolta l'evento `'drain'` quando il buffer è pieno
+- Usa stream con `.pipe()` che gestisce automaticamente il backpressure
+
+**❌ Evita:**
+- Ignorare il backpressure e continuare a scrivere dati
+- Operazioni sincrone molto lente nei data handler
+- Bufferizzare troppi dati in memoria
+
+#### Analogia
+
+Pensa a TCP come un **sistema di consegna pacchi intelligente**:
+- Il **camion** (sender) ha una capacità limitata
+- Il **magazzino** (receiver) ha spazio limitato
+- Se il magazzino è pieno, il camion rallenta automaticamente le consegne
+- Quando c'è spazio, il camion riprende a pieno ritmo
 
 ```javascript
 // TCP gestisce automaticamente flow e congestion control

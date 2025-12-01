@@ -130,7 +130,7 @@ process.on('SIGINT', () => {
 // ============================================
 // INFO
 // ============================================
-console.log('='.repeat(50));
+console.log('\n' + '='.repeat(50));
 console.log('EVENT-DRIVEN SOCKET DEMO');
 console.log('='.repeat(50));
 console.log('\nThis demo shows all socket events.');
