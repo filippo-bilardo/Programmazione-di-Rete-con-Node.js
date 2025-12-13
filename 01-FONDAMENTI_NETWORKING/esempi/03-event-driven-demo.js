@@ -9,6 +9,18 @@
  * 
  * Uso:
  *   node 03-event-driven-demo.js
+ * Test con netcat:
+ *  nc localhost 3002
+ *  Digita messaggi e osserva gli eventi
+ * Test con 01-simple-client.js:
+ *  node 01-simple-client.js
+ * 
+ * Se vuoi usare la stessa shell sia come client e server,
+ *   node 03-event-driven-demo.js &
+ *   nc localhost 3002
+ * per chiudere il client, digita "quit" o premi Ctrl+D
+ * per chiudere il server, digita fg per portarlo in foreground e poi Ctrl+C
+ * 
  */
 
 const net = require('net');
@@ -41,6 +53,7 @@ server.on('connection', (socket) => {
     
     // Socket Events
     
+    // L'evento 'data' viene emesso quando arrivano dati
     socket.on('data', (chunk) => {
         console.log(`📩 DATA #${clientId} (${chunk.length} bytes)`);
         console.log(`   Content: "${chunk.toString().trim()}"`);
@@ -49,16 +62,21 @@ server.on('connection', (socket) => {
         socket.write(`ECHO: ${chunk}`);
     });
     
+    // L'evento 'drain' indica che il buffer di scrittura è stato svuotato
     socket.on('drain', () => {
         console.log(`💧 DRAIN #${clientId}`);
         console.log(`   Write buffer emptied`);
     });
     
+    // L'evento 'end' indica che il client ha chiuso la connessione
+    // a differenza di 'close', non indica errori
     socket.on('end', () => {
         console.log(`🔚 END #${clientId}`);
         console.log(`   Client closed connection`);
     });
     
+    // L'evento 'close' indica che la connessione è stata chiusa
+    // a differenza di 'end', può essere causato da errori
     socket.on('close', (hadError) => {
         console.log(`🚪 CLOSE #${clientId}`);
         console.log(`   Had error: ${hadError}`);
@@ -72,6 +90,7 @@ server.on('connection', (socket) => {
         console.log(`   Code: ${err.code}`);
     });
     
+    // L'evento 'timeout' indica che il socket è inattivo da troppo tempo
     socket.on('timeout', () => {
         console.log(`⏱️  TIMEOUT #${clientId}`);
         console.log(`   Idle timeout reached`);
@@ -110,6 +129,7 @@ server.listen(PORT, 'localhost');
 
 // ============================================
 // GRACEFUL SHUTDOWN
+// Quando riceviamo SIGINT (Ctrl+C), chiudiamo il server
 // ============================================
 process.on('SIGINT', () => {
     console.log('\n\n⏹️  SHUTDOWN SIGNAL RECEIVED');

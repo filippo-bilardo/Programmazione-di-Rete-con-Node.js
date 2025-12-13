@@ -15,7 +15,7 @@
 const net = require('net');
 const readline = require('readline');
 
-const PORT = 3000;
+const PORT = 3002;
 const HOST = 'localhost';
 
 // ============================================
